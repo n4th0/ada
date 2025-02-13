@@ -1,0 +1,145 @@
+# Nathan Rodriguez Moyses 48727425Q
+set terminal png
+
+set output "quickSort.png"
+
+set xlabel "Array size"
+set ylabel "Millions of program steps"
+
+set title  "quickSort"
+
+plot "qs-vs-hs.Msteps" using 1:2 with lines title "random arrays", "qs-vs-hs.Msteps" using 1:4 with lines title "sorted arrays", "qs-vs-hs.Msteps" using 1:6 with lines title "reverse-sorted arrays"
+
+#########################
+
+set terminal png
+
+set output "heapSort.png"
+
+set xlabel "Array size"
+set ylabel "Millions of program steps"
+
+set title  "heapSort"
+
+plot "qs-vs-hs.Msteps" using 1:3 with lines title "random arrays", "qs-vs-hs.Msteps" using 1:5 with lines title "sorted arrays", "qs-vs-hs.Msteps" using 1:7 with lines title "reverse-sorted arrays"
+
+
+####################################
+# random arrays
+####################################
+set terminal png
+
+set output "qs-vs-hs-RA.png"
+
+set xlabel "Array size"
+set ylabel "Millions of program steps"
+
+set title  "quickSort versus heapSort (random arrays)"
+
+
+y(x)= a*(x*log(x))+ b*x + c
+fitFunction="Fitting QuickSort time values to f(n) = n log(n)+n"
+fit y(x) "qs-vs-hs.Msteps" using 1:2 via a, b, c
+
+
+z(x)= d*(x*log(x)) + e
+fitFunction2="Fitting HeapSort time values to f(n) = n log(n)"
+fit z(x) "qs-vs-hs.Msteps" using 1:3 via d, e
+
+plot "qs-vs-hs.Msteps" using 1:3 with lines title "HeapSort","qs-vs-hs.Msteps" using 1:2 with lines title "QuickSort", y(x) title fitFunction, z(x) title fitFunction2
+
+
+####################################
+# sorted arrays 
+####################################
+
+set terminal png
+
+set output "qs-vs-hs-SA.png"
+
+set xlabel "Array size"
+set ylabel "Millions of program steps"
+
+set title  "quickSort versus heapSort (sorted arrays)"
+
+n(x)= f*(x*log(x))+ g*x + h
+fitFunction="Fitting QuickSort time values to f(n) = n log(n)+n"
+fit n(x) "qs-vs-hs.Msteps" using 1:4 via f, g, h
+
+
+m(x)= i*(x*log(x)) + j
+fitFunction2="Fitting HeapSort time values to f(n) = n log(n)"
+fit m(x) "qs-vs-hs.Msteps" using 1:5 via i, j
+
+plot "qs-vs-hs.Msteps" using 1:5 with lines title "HeapSort","qs-vs-hs.Msteps" using 1:4 with lines title "QuickSort", n(x) title fitFunction, m(x) title fitFunction2
+
+
+####################################
+# sorted arrays 
+####################################
+
+set terminal png
+
+set output "qs-vs-hs-RSA.png"
+
+set xlabel "Array size"
+set ylabel "Millions of program steps"
+
+set title  "quickSort versus heapSort (reverse sorted arrays)"
+
+o(x)= k*(x*log(x))+ l*x + r
+fitFunction="Fitting QuickSort time values to f(n) = n log(n)+n"
+fit o(x) "qs-vs-hs.Msteps" using 1:6 via k, l, r
+
+
+p(x)= s*(x*log(x)) + t
+fitFunction2="Fitting HeapSort time values to f(n) = n log(n)"
+fit p(x) "qs-vs-hs.Msteps" using 1:7 via s, t
+
+plot "qs-vs-hs.Msteps" using 1:7 with lines title "HeapSort","qs-vs-hs.Msteps" using 1:6 with lines title "QuickSort", o(x) title fitFunction, p(x) title fitFunction2
+
+##########################################################################
+#Testing different analytical functions to determine which best fits:
+
+#set output "quickSort_and_Fit-Function.png"
+#set title "Quick Sort: Time complexity and Fit function"
+
+
+#------------------------------------------------------------------------
+
+# Testing 3 different functions:
+#Uncomment the function to be tested and comment the rest:
+
+##Fit to a linear function: 
+#y(x)=a*x + b 
+#fitFunction="Fitting Quick time values to f(n) = n+k"
+#fit y(x) "quickSort.CPUtimes" using 1:2 via a,b
+
+
+##Fit to a (n log n + n) function: 
+#y(x)=a*x*log(x)+b*x+c
+##fitFunction="Fitting QuickSort time values to f(n) = n log(n)+n"
+#fit y(x) "quickSort.CPUtimes" using 1:2 via a, b, c
+#
+##Fit to a (n log n + k) function: 
+# y(x)=a*x*log(x) + b 
+# fitFunction="Fitting QuickSort time values to f(n) = n log(n)+k"
+# fit y(x) "quickSort.CPUtimes" using 1:2 via a,b
+
+##Fit to a (n log n) function: 
+# y(x)=a*x*log(x) 
+# fitFunction="Fitting QuickSort time values to f(n) = n log(n)"
+# fit y(x) "quickSort.CPUtimes" using 1:2 via a
+
+##Fit to a cuadratic function: 
+# y(x)=a*x*x + b*x + c
+# fitFunction="Fitting QuickSort time values to f(n) = n²+n+k"
+# fit y(x) "quickSort.CPUtimes" using 1:2 via a,b,c
+
+#------------------------------------------------------------------------
+
+
+#Finally draw both functions (CPU times of sample and the one that best fits) on one graph
+#plot "quickSort.CPUtimes" using 1:2 with points title "CPU times of sample", y(x) title fitFunction 
+
+
