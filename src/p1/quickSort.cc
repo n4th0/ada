@@ -1,4 +1,4 @@
-// Nathan Rodriguez Moyses 48727425Q
+// Nathan Rodriguez Moyses
 /*
 ADA 2024-25
 Práctica 1: "Empirical analysis of Quicksort average-time complexity."

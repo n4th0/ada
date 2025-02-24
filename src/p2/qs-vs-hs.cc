@@ -1,3 +1,4 @@
+// Nathan Rodriguez Moyses
 /*
 ADA. 2024-25
 Practice 2: "Empirical analysis by means of program-steps account of two sorting
@@ -209,7 +210,7 @@ int main() {
     average2_sorted += (float)(PASOS) / 1000000;
 
     for (size_t j = size; j > 0; j--)
-      v[j] = v2[j] = j;
+      v[(size - j)] = v2[(size - j)] = j;
 
     PASOS = 0;
     middle_QuickSort(v, 0, size);
