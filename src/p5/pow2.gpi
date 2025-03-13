@@ -1,0 +1,14 @@
+# Nathan Rodriguez Moyses 48727425Q
+set terminal png
+
+set output "pow2.png"
+
+set xlabel "n size"
+set ylabel "steps"
+
+set title  "Calculating powers of 2"
+
+plot "powSteps" using 1:2 with lines title "θ(n)", \
+"powSteps" using 1:3 with lines title "θ(log(n))", \
+"powSteps" using 1:4 with lines title "Θ(2^n)"
+

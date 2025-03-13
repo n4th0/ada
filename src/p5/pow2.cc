@@ -43,23 +43,34 @@ unsigned long pow2_3(unsigned n) {
     return pow2_3(n - 1) + pow2_3(n - 1);
   }
 }
+void cabecera() {
+  cout << "# THREE DIFERENT WAYS TO CALCULATE 2**n.                            "
+          "         "
+       << endl;
+  cout << "# n      Θ(n)          Θ(log(n))                Θ(2**n)             "
+          "         "
+       << endl;
+  cout << "#==================================================================="
+          "========="
+       << endl;
+}
 
 int main() {
 
-  if (pow2_3(10) == 1024) {
-    cout << "ok" << endl;
-  }
-  if (pow2_3(20) == 1048576) {
-    cout << "ok" << endl;
-  }
-  if (pow2_3(26) == 67108864) {
-    cout << "ok" << endl;
-  }
-  if (pow2_3(5) == 32) {
-    cout << "ok" << endl;
-  }
-  if (pow2_3(2) == 4) {
-    cout << "ok" << endl;
+  cabecera();
+  for (unsigned i = 0; i < 20; i++) {
+    pasos = 0;
+    cout << i << " ";
+    pow2_1(i);
+    cout << "\t" << pasos << " ";
+    pasos = 0;
+    pow2_2(i);
+    cout << "\t\t" << pasos << " ";
+    pasos = 0;
+    pow2_3(i);
+    cout << "\t\t\t" << pasos << " ";
+    pasos = 0;
+    cout << endl;
   }
 
   return 0;
