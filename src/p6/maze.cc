@@ -1,5 +1,4 @@
 // Nathan Rodriguez Moyses
-#include <cstddef>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -10,15 +9,6 @@ using namespace std;
 
 const static int CENTINELA = -1;
 
-struct Coord { // for the parsing stuff
-  int i;
-  int j;
-  Coord(int i, int j) {
-    this->i = i;
-    this->j = j;
-  }
-};
-
 int min(int a, int b, int c) {
   if (a < b && a < c) {
     return a;
@@ -28,7 +18,37 @@ int min(int a, int b, int c) {
   return c;
 }
 
-vector<Coord> parsing;
+void maze_parser(vector<vector<int>> &matrix, const vector<vector<int>> &memo,
+                 int pos_i, int pos_j) {
+  if (pos_j == 0 && pos_i == 0) {
+    matrix[pos_i][pos_j] = 3;
+    return;
+  }
+
+  if (pos_i > 0 && pos_j > 0 &&
+      memo[pos_i][pos_j] == (memo[pos_i - 1][pos_j - 1] + 1)) {
+    matrix[pos_i - 1][pos_j - 1] = 3;
+    return maze_parser(matrix, memo, pos_i - 1, pos_j - 1);
+  }
+
+  if (pos_i > 0 && memo[pos_i][pos_j] == (memo[pos_i - 1][pos_j] + 1)) {
+    matrix[pos_i - 1][pos_j] = 3;
+    return maze_parser(matrix, memo, pos_i - 1, pos_j);
+  }
+  if (pos_j > 0 && memo[pos_i][pos_j] == (memo[pos_i][pos_j - 1] + 1)) {
+    matrix[pos_i][pos_j - 1] = 3;
+    return maze_parser(matrix, memo, pos_i, pos_j - 1);
+  }
+
+  if (pos_i == 0) {
+    matrix[pos_i][pos_j - 1] = 3;
+    return maze_parser(matrix, memo, pos_i, pos_j - 1);
+  }
+  if (pos_j == 0) {
+    matrix[pos_i - 1][pos_j] = 3;
+    return maze_parser(matrix, memo, pos_i - 1, pos_j);
+  }
+}
 
 ///
 /// maze_naive O(3**n) -> n = m*l
@@ -86,6 +106,7 @@ int maze_memo(int final_i, int final_j, int pos_i, int pos_j,
     return memo[pos_i][pos_j];
   }
   if (final_i == pos_i && final_j == pos_j) {
+    memo[pos_i][pos_j] = 1;
     return 1;
   }
   int a, b, c;
@@ -123,6 +144,112 @@ int maze_memo(int final_i, int final_j, int pos_i, int pos_j,
   }
 
   return aux;
+}
+
+int maze_it_vector(const vector<vector<int>> &matrix) {
+
+  vector<int> memo(matrix[0].size(), CENTINELA);
+  int var = numeric_limits<int>::max();
+
+  for (int i = 0; i < (int)matrix.size(); i++) {
+    var = numeric_limits<int>::max();
+    for (int j = 0; j < (int)matrix[0].size(); j++) {
+
+      if (matrix[i][j] == 0) {
+        var = memo[j];
+        memo[j] = numeric_limits<int>::max();
+        continue;
+      }
+
+      if (i == 0 && j == 0) {
+        memo[j] = 1;
+        continue;
+      }
+
+      if (j > 0 && i == 0) {
+        var = memo[j];
+        if (memo[j - 1] != numeric_limits<int>::max()) {
+          memo[j] = 1 + memo[j - 1];
+        } else {
+          memo[j] = memo[j - 1];
+        }
+        continue;
+      }
+
+      if (i > 0 && j == 0) {
+        var = memo[j];
+        if (memo[j] != numeric_limits<int>::max()) {
+          memo[j] = 1 + memo[j];
+        } else {
+          memo[j] = memo[j];
+        }
+        continue;
+      }
+
+      int aux = min(memo[j], memo[j - 1], var);
+      var = memo[j];
+      memo[j] = aux;
+
+      if (memo[j] != numeric_limits<int>::max()) {
+        memo[j]++;
+      }
+    }
+  }
+
+  return memo[matrix[0].size() - 1] == numeric_limits<int>::max()
+             ? 0
+             : memo[matrix[0].size() - 1];
+}
+
+int maze_it_matrix(const vector<vector<int>> &matrix,
+                   vector<vector<int>> &memo) {
+
+  for (int i = 0; i < (int)memo.size(); i++) {
+    for (int j = 0; j < (int)memo[0].size(); j++) {
+      if (i == 0 && j == 0) {
+        if (matrix[i][j] == 0) {
+          memo[i][j] = numeric_limits<int>::max();
+        } else {
+          memo[i][j] = 1;
+        }
+        continue;
+      }
+
+      if (matrix[i][j] == 0) {
+        memo[i][j] = numeric_limits<int>::max();
+        continue;
+      }
+
+      if (j > 0 && i == 0) {
+        if (memo[i][j - 1] != numeric_limits<int>::max()) {
+          memo[i][j] = 1 + memo[i][j - 1];
+        } else {
+          memo[i][j] = memo[i][j - 1];
+        }
+        continue;
+      }
+
+      if (i > 0 && j == 0) {
+        if (memo[i - 1][j] != numeric_limits<int>::max()) {
+          memo[i][j] = 1 + memo[i - 1][j];
+        } else {
+          memo[i][j] = memo[i - 1][j];
+        }
+        continue;
+      }
+
+      memo[i][j] = min(memo[i - 1][j], memo[i - 1][j - 1], memo[i][j - 1]);
+
+      if (memo[i][j] != numeric_limits<int>::max()) {
+        memo[i][j]++;
+      }
+    }
+  }
+
+  return memo[matrix.size() - 1][matrix[0].size() - 1] ==
+                 numeric_limits<int>::max()
+             ? 0
+             : memo[matrix.size() - 1][matrix[0].size() - 1];
 }
 
 void print_usage() {
@@ -177,15 +304,10 @@ int main(int argc, char **argv) {
     for (int j = 0; j < cols; j++)
       is >> matrix[i][j];
 
-  if (t_flag) {
-  }
-
-  if (p2D_flag) {
-  }
-  if (ignoreNaive_flag) {
-  }
-
   vector<vector<int>> memo(rows, vector<int>(cols, CENTINELA));
+
+  vector<vector<int>> memo_it(matrix.size(),
+                              vector<int>(matrix[0].size(), CENTINELA));
 
   if (!ignoreNaive_flag) {
     cout << maze_naive(0, 0, matrix.size() - 1, matrix[0].size() - 1, matrix);
@@ -194,16 +316,38 @@ int main(int argc, char **argv) {
   }
 
   cout << " ";
-  cout << maze_memo(0, 0, matrix.size() - 1, matrix[0].size() - 1, matrix, memo)
-       << " ? ?" << endl;
 
-  if (p2D_flag) {
+  int memo_int =
+      maze_memo(0, 0, matrix.size() - 1, matrix[0].size() - 1, matrix, memo);
+
+  cout << memo_int << " " << maze_it_matrix(matrix, memo_it) << " "
+       << maze_it_vector(matrix) << endl;
+
+  if (p2D_flag) { // showing pathing
     cout << "?" << endl;
+
+    // if (memo_int == 0) {
+    //   cout << "0" << endl;
+    // } else {
+    //   maze_parser(matrix, memo, matrix.size() - 1, matrix[0].size() - 1);
+    //   matrix[matrix.size() - 1][matrix[0].size() - 1] = 3;
+    //   for (unsigned i = 0; i < matrix.size(); i++) {
+    //     for (unsigned j = 0; j < matrix[j].size(); j++) {
+    //       if (matrix[i][j] == 3)
+    //         cout << "*";
+    //       else
+    //         cout << matrix[i][j];
+    //     }
+    //     cout << endl;
+    //   }
+    // }
   }
 
   if (t_flag) {
+    cout << "?" << endl;
 
-    // for (int i = 0; i < rows; i++) { // la clave para el parsing
+    // cout << "Memoization table:" << endl;
+    // for (int i = 0; i < rows; i++) {
     //   cout << " ";
     //   for (int j = 0; j < cols; j++) {
     //     if (memo[i][j] == -1) {
@@ -216,6 +360,19 @@ int main(int argc, char **argv) {
     //   }
     //   cout << endl;
     // }
-    cout << "?" << endl;
+    // cout << "Iterative table:" << endl;
+    // for (int i = 0; i < rows; i++) {
+    //   cout << " ";
+    //   for (int j = 0; j < cols; j++) {
+    //     if (memo_it[i][j] == -1) {
+    //       cout << " - ";
+    //     } else if (memo_it[i][j] == numeric_limits<int>::max()) {
+    //       cout << " X ";
+    //     } else {
+    //       cout << " " << memo_it[i][j] << " ";
+    //     }
+    //   }
+    //   cout << endl;
+    // }
   }
 }

@@ -1,5 +1,5 @@
 # Nathan Rodriguez Moyses
-OPTS = -Wall -Wextra -O3 -std=c++0x
+OPTS = -Wall -Wextra -O3 -std=c++0x -g
 CC = g++
 
 all: maze
