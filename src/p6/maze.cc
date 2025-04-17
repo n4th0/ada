@@ -20,6 +20,10 @@ int min(int a, int b, int c) {
 
 void maze_parser(vector<vector<int>> &matrix, const vector<vector<int>> &memo,
                  int pos_i, int pos_j) {
+  if (pos_j == (int)matrix[0].size() - 1 && pos_i == (int)matrix.size() - 1) {
+    matrix[pos_i][pos_j] = 3;
+  }
+
   if (pos_j == 0 && pos_i == 0) {
     matrix[pos_i][pos_j] = 3;
     return;
@@ -324,55 +328,55 @@ int main(int argc, char **argv) {
        << maze_it_vector(matrix) << endl;
 
   if (p2D_flag) { // showing pathing
-    cout << "?" << endl;
+    // cout << "?" << endl;
 
-    // if (memo_int == 0) {
-    //   cout << "0" << endl;
-    // } else {
-    //   maze_parser(matrix, memo, matrix.size() - 1, matrix[0].size() - 1);
-    //   matrix[matrix.size() - 1][matrix[0].size() - 1] = 3;
-    //   for (unsigned i = 0; i < matrix.size(); i++) {
-    //     for (unsigned j = 0; j < matrix[j].size(); j++) {
-    //       if (matrix[i][j] == 3)
-    //         cout << "*";
-    //       else
-    //         cout << matrix[i][j];
-    //     }
-    //     cout << endl;
-    //   }
-    // }
+    if (memo_int == 0) {
+      cout << "0" << endl;
+    } else {
+      maze_parser(matrix, memo, matrix.size() - 1, matrix[0].size() - 1);
+
+      for (unsigned i = 0; i < matrix.size(); i++) {
+        for (unsigned j = 0; j < matrix[i].size(); j++) {
+          if (matrix[i][j] == 3)
+            cout << "*";
+          else
+            cout << matrix[i][j];
+        }
+        cout << endl;
+      }
+    }
   }
 
   if (t_flag) {
-    cout << "?" << endl;
+    // cout << "?" << endl;
 
-    // cout << "Memoization table:" << endl;
-    // for (int i = 0; i < rows; i++) {
-    //   cout << " ";
-    //   for (int j = 0; j < cols; j++) {
-    //     if (memo[i][j] == -1) {
-    //       cout << " - ";
-    //     } else if (memo[i][j] == numeric_limits<int>::max()) {
-    //       cout << " X ";
-    //     } else {
-    //       cout << " " << memo[i][j] << " ";
-    //     }
-    //   }
-    //   cout << endl;
-    // }
-    // cout << "Iterative table:" << endl;
-    // for (int i = 0; i < rows; i++) {
-    //   cout << " ";
-    //   for (int j = 0; j < cols; j++) {
-    //     if (memo_it[i][j] == -1) {
-    //       cout << " - ";
-    //     } else if (memo_it[i][j] == numeric_limits<int>::max()) {
-    //       cout << " X ";
-    //     } else {
-    //       cout << " " << memo_it[i][j] << " ";
-    //     }
-    //   }
-    //   cout << endl;
-    // }
+    cout << "Memoization table:" << endl;
+    for (int i = 0; i < rows; i++) {
+      cout << " ";
+      for (int j = 0; j < cols; j++) {
+        if (memo[i][j] == -1) {
+          cout << " - ";
+        } else if (memo[i][j] == numeric_limits<int>::max()) {
+          cout << " X ";
+        } else {
+          cout << " " << memo[i][j] << " ";
+        }
+      }
+      cout << endl;
+    }
+    cout << "Iterative table:" << endl;
+    for (int i = 0; i < rows; i++) {
+      cout << " ";
+      for (int j = 0; j < cols; j++) {
+        if (memo_it[i][j] == -1) {
+          cout << " - ";
+        } else if (memo_it[i][j] == numeric_limits<int>::max()) {
+          cout << " X ";
+        } else {
+          cout << " " << memo_it[i][j] << " ";
+        }
+      }
+      cout << endl;
+    }
   }
 }
