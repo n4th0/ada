@@ -236,10 +236,12 @@ int maze_it_matrix(const vector<vector<int>> &matrix,
     }
   }
 
-  return memo[matrix.size() - 1][matrix[0].size() - 1] ==
-                 numeric_limits<int>::max()
-             ? 0
-             : memo[matrix.size() - 1][matrix[0].size() - 1];
+  return memo[matrix.size() - 1][matrix[0].size() - 1];
+  // return memo[matrix.size() - 1][matrix[0].size() - 1] ==
+  //                numeric_limits<int>::max()
+  //            ? 0
+  //            : memo[matrix.size() - 1][matrix[0].size() - 1];
+
 }
 
 int prioritize(int i){
@@ -345,7 +347,7 @@ int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, i
 
   // 1
   // int sol = numeric_limits<int>::max();
-  int sol = numeric_limits<int>::max();
+  int sol = iterative_sol;
 
   // 1
   // using Node = tuple<int, int, int>;
