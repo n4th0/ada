@@ -1,4 +1,4 @@
-
+// Nathan Rodriguez Moyses
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -198,7 +198,7 @@ int maze_it_matrix(const vector<vector<int>> &matrix,
         if (matrix[i][j] == 0) {
           memo[i][j] = numeric_limits<int>::max();
         } else {
-          memo[i][j] = 1;
+          memo[i][j] = 2;
         }
         continue;
       }
@@ -253,7 +253,6 @@ int prioritize(int i){
     default:
       return i;
   }
-
 }
 
 void maze_parser(vector<vector<int>> &matrix, const vector<vector<int>> &memo,
@@ -332,12 +331,12 @@ int optimistic_limit(int pos_i, int pos_j){
   int a_i = END_I - pos_i;
   int a_j = END_J - pos_j;
 
-  int s = a_i*a_i + a_j*a_j;
-  return sqrt(s);
+  // int s = a_i*a_i + a_j*a_j;
+  return max(a_i, a_j);
 }
 
 
-void maze_bt(int pos_i, int pos_j, 
+void maze_bt(int pos_i, int pos_j,
              const vector<vector<int>> &matrix, vector<vector<int>> &arrived,
              int curr_sol, int &best_sol){
 
@@ -370,6 +369,7 @@ void maze_bt(int pos_i, int pos_j,
       no_feasible_discarded_nodes++;
       continue;
     }
+
     // es pared
     if (matrix[a_i][a_j] == 0) {
       no_feasible_discarded_nodes++;
@@ -385,7 +385,6 @@ void maze_bt(int pos_i, int pos_j,
       no_promissing_discarded_nodes++;
       continue;
     }
-
 
     // si llego mi mejor path es mejor que el actual, paso del actual
     if (best_sol <= sol_aux) {
