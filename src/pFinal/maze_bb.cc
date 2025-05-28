@@ -22,11 +22,14 @@ bool resuelve_3_movs = false;
 bool p2D_flag = false;
 bool p_flag = false;
 
-int visited_leaf_nodes = 0;
+int completed_nodes = 0;
 int visited_nodes = 0;
-int explored_nodes = 0;
+int expanded_nodes = 0;
 int no_promissing_discarded_nodes = 0;
 int no_feasible_discarded_nodes = 0;
+int explored_nodes = 0;
+int current_best_updates_from_pessimistic_bounds = 0;
+int current_best_updates_from_completed_nodes = 0;
 
 void print_usage() {
   cerr << "Usage:\nmaze: [--p2D] [-p] -f file" << endl;
@@ -41,10 +44,10 @@ int min(int a, int b, int c) {
   return c;
 }
 
-int sum_if_not_inf(int a){
+void sum_if_not_inf(int & a){
   if (a != numeric_limits<int>::max())
-    return a +1;
-  return a ;
+     a++;
+
 }
 
 ///
@@ -130,65 +133,61 @@ int maze_greedy(const vector<vector<int>> & m, int pos_i, int pos_j){
   return numeric_limits<int>::max();
 }
 
-int maze_memo(int final_i, int final_j, int pos_i, int pos_j,
-              const vector<vector<int>> &matrix, vector<vector<int>> &memo) {
+int maze_memo(const vector<vector<int>> &matrix, vector<vector<int>> &memo) {
+  int rows = matrix.size();
+  int cols = matrix[0].size();
+  int INF = numeric_limits<int>::max();
 
-  if (matrix[pos_i][pos_j] == 0) {
-    memo[pos_i][pos_j] = numeric_limits<int>::max();
-    return numeric_limits<int>::max();
+  for (int i = rows - 1; i >= 0; i--) {
+    for (int j = cols - 1; j >= 0; j--) {
+      if (i == END_I && j == END_J) {
+        memo[i][j] = 0;
+        continue;
+      }
+      if (matrix[i][j] == 0) {
+        memo[i][j] = INF;
+        continue;
+      }
+      int minNext = INF;
+      for (int d = 1; d <= 8; d++) {
+        int ni = i, nj = j;
+        directions(d, ni, nj);
+        if (ni >= 0 && ni < rows && nj >= 0 && nj < cols && matrix[ni][nj] == 1 && memo[ni][nj]!= CENTINELA) {
+          minNext = min(minNext, memo[ni][nj]);
+        }
+      }
+      memo[i][j] = (minNext != INF) ? (1 + minNext) : INF;
+    }
   }
 
-  if (memo[pos_i][pos_j] != CENTINELA) {
-    return memo[pos_i][pos_j];
-  }
-  if (final_i == pos_i && final_j == pos_j) {
-    memo[pos_i][pos_j] = 1;
-    return 1;
-  }
-  int a, b, c;
-  if (pos_i - 1 >= final_i) {
-    a = maze_memo(final_i, final_j, pos_i - 1, pos_j, matrix, memo);
-  } else {
-    a = numeric_limits<int>::max();
-  }
+  /*
+  for (int i = rows - 1; i >= 0; i--) {
+    for (int j = cols - 1; j >= 0; j--) {
+      if (i == rows - 1 && j == cols - 1) {
+        memo[i][j] = 1;
+        continue;
+      }
 
-  if (pos_j - 1 >= final_j) {
-    b = maze_memo(final_i, final_j, pos_i, pos_j - 1, matrix, memo);
-  } else {
-    b = numeric_limits<int>::max();
-  }
+      if (matrix[i][j] == 0) {
+        memo[i][j] = INF;
+        continue;
+      }
 
-  if (pos_i - 1 >= final_i && pos_j - 1 >= final_j) {
-    c = maze_memo(final_i, final_j, pos_i - 1, pos_j - 1, matrix, memo);
-  } else {
-    c = numeric_limits<int>::max();
-  }
 
-  int aux = min(a, b, c);
+      int minNext = INF;
 
-  if (aux != numeric_limits<int>::max()) {
-    aux++;
-  }
+      if (i + 1 < rows) minNext = min(minNext, memo[i + 1][j]);        // Abajo
+      if (j + 1 < cols ) minNext = min(minNext, memo[i][j + 1]);        // Derecha
+      if (i + 1 < rows && j + 1 < cols) minNext = min(minNext, memo[i + 1][j + 1]); // Diagonal
 
-  memo[pos_i][pos_j] = aux;
+      if (minNext != INF)
+        memo[i][j] = 1 + minNext;
+      else
+        memo[i][j] = INF;
+    }
+  }*/
 
-  // no existe
-  if (aux == numeric_limits<int>::max() &&
-      (int)(matrix[0].size() - 1) == pos_j &&
-      (int)(matrix.size() - 1) == pos_i) {
-    aux = 0;
-  }
-
-  return aux;
-}
-
-int maze_memo(const vector<vector<int>> &m,int pos_i, int pos_j,vector<vector<int>> &memo){
-
-  int aux = maze_memo(END_I, END_J, pos_i, pos_j, m, memo);
-  if (aux == 0) {
-    return numeric_limits<int>::max();
-  }
-  return aux;
+  return memo[0][0];
 }
 
 int maze_it_matrix(const vector<vector<int>> &matrix,
@@ -338,16 +337,17 @@ int optimistic_limit(int pos_i, int pos_j){
 }
 
 int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, int iterative_sol){
-
-
+// int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, const vector<vector<int>> & memo, int iterative_sol){
+ 
 
   if (!matrix[0][0] || !matrix[END_I][END_J] ) {
+    completed_nodes++;
     return 0;
   }
 
   // 1
-  // int sol = numeric_limits<int>::max();
   int sol = iterative_sol;
+  // double sol = iterative_sol;
 
   // 1
   // using Node = tuple<int, int, int>;
@@ -372,25 +372,44 @@ int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, i
   // 1
   // priority_queue<Node> pq;
 
+  // 2
   priority_queue<Node, vector<Node>, is_worse> pq;
 
-  pq.emplace(0, 0, 1);
+  // 3
+  // queue<Node> pq;
+
+  pq.emplace(0, 0, 1, optimistic_limit(0, 0)+1);
 
 
   while (!pq.empty()) {
+
+    // 3
+    // auto [i, j, current, opt] = pq.front();
+
     auto [i, j, current, opt] = pq.top();
+
     pq.pop();
 
+    if (opt >= sol) {
+      no_promissing_discarded_nodes++;
+      continue;
+    }
 
     if (i == END_I && j == END_J) {
-      sol = min(sol, current);
+      completed_nodes++;
+      if (sol > current) {
+        current_best_updates_from_completed_nodes++;
+        sol = current;
+      }
       continue;
     }
 
     int a_i, a_j;
     int n;
 
+    expanded_nodes++;
     for (int a = 1; a < 9; a++) {
+      visited_nodes++;
 
       n = prioritize(a);
       a_i = i;
@@ -403,10 +422,12 @@ int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, i
       if (a_i < 0 || a_j < 0 || 
         a_j > END_J || a_i > END_I || 
         matrix[a_i][a_j] == 0) {
+        no_feasible_discarded_nodes++;
         continue;
       }
 
       sol_aux++;
+
 
       // 1
       // // no cycles
@@ -416,22 +437,41 @@ int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, i
 
       // no cycles
       if (arrived[a_i][a_j] <= sol_aux) {
+        no_promissing_discarded_nodes++;
         continue;
       }
 
       // 2
+      //
       // if (sol <= sol_aux) {
       //   continue;
       // }
 
+
       if (sol <= sol_aux) {
+        no_promissing_discarded_nodes++;
         continue;
       }
+
+      // int vor = maze_greedy(matrix, i, j);
+      // if ( vor!= numeric_limits<int>::max() && vor+current < sol) {
+      //   sol = vor+current;
+      // }
+
+      // if (memo[a_i][a_j] != numeric_limits<int>::max() &&
+      //   sol > memo[a_i][a_j]+sol_aux) {
+      //   current_best_updates_from_pessimistic_bounds++;
+      //   sol = memo[a_i][a_j]+sol_aux;
+      //   break;
+      // }
 
       arrived[a_i][a_j] = sol_aux;
 
       int opt_lim = optimistic_limit(a_i, a_j) + sol_aux;
-      if (opt_lim > sol) {
+      // double opt_lim = 1.0205*optimistic_limit(a_i, a_j) + sol_aux;
+
+      if (opt_lim >= sol) {
+        no_promissing_discarded_nodes++;
         continue;
       }
 
@@ -483,6 +523,7 @@ int main(int argc, char ** argv){
   is >> rows >> cols;
   vector<vector<int>> matrix(rows, vector<int>(cols));
   vector<vector<int>> memo(rows, vector<int>(cols));
+  vector<vector<int>> memo2(rows, vector<int>(cols, CENTINELA));
 
   for (int i = 0; i < rows; i++)
     for (int j = 0; j < cols; j++)
@@ -495,21 +536,53 @@ int main(int argc, char ** argv){
 
   auto start = clock();
 
+  // maze_memo(matrix, memo2);
+
   int sol_aux = maze_it_matrix(matrix, memo);
+
+  // int sol = maze_bb(matrix, memo, memo2, sol_aux);
   int sol = maze_bb(matrix, memo, sol_aux);
+
 
   auto end = clock();
 
   cout << sol <<endl;
 
-  // cout << visited_nodes << " ";
-  // cout << explored_nodes << " ";
-  // cout << visited_leaf_nodes << " ";
-  // cout << no_feasible_discarded_nodes << " ";
-  // cout << no_promissing_discarded_nodes << " ";
-  // cout << endl;
+  // for (unsigned i = 0; i<matrix.size(); i++) {
+  //   for (unsigned j = 0; j<matrix[i].size(); j++) {
+  //     cout << matrix[i][j] << " ";
+  //   }
+  //   cout << endl;
+  // }
+  // cout << "---------------"<<endl;
+  // for (unsigned i = 0; i<matrix.size(); i++) {
+  //   for (unsigned j = 0; j<matrix[i].size(); j++) {
+  //     if (memo2[i][j] == numeric_limits<int>::max()) {
+  //       cout << "I ";
+  //     }
+  //     else{
+  //       cout << memo2[i][j] << " ";
+  //     }
+  //   }
+  //   cout << endl;
+  // }
+
+  cout << visited_nodes << " ";
+  cout << expanded_nodes << " ";
+  cout << completed_nodes << " ";
+  cout << no_feasible_discarded_nodes << " ";
+  cout << no_promissing_discarded_nodes << " ";
+  cout << explored_nodes << " ";
+  cout << current_best_updates_from_completed_nodes << " ";
+  cout << current_best_updates_from_pessimistic_bounds << " ";
+  cout << endl;
 
   cout << 1000.0 * (end - start) / CLOCKS_PER_SEC << endl;
+
+  memo[0][0] = 1;
+  if (p2D_flag || p_flag ) {
+    maze_parser(matrix, memo, END_I, END_J, solution);
+  }
 
   if (p2D_flag && sol != 0) {
     for (unsigned i = 0; i<matrix.size(); i++) {
@@ -525,6 +598,8 @@ int main(int argc, char ** argv){
   }
 
   if (p_flag && sol!=0) {
+
+
     cout << "<";
     for (int i = solution.size()-1; i >= 0 ; i--) {
       cout << solution[i];
