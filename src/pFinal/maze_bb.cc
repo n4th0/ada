@@ -22,14 +22,14 @@ bool resuelve_3_movs = false;
 bool p2D_flag = false;
 bool p_flag = false;
 
-int completed_nodes = 0;
-int visited_nodes = 0;
-int expanded_nodes = 0;
-int no_promissing_discarded_nodes = 0;
-int no_feasible_discarded_nodes = 0;
-int explored_nodes = 0;
-int current_best_updates_from_pessimistic_bounds = 0;
-int current_best_updates_from_completed_nodes = 0;
+long long int completed_nodes = 0;
+long long int visited_nodes = 0;
+long long int expanded_nodes = 0;
+long long int no_promissing_discarded_nodes = 0;
+long long int no_feasible_discarded_nodes = 0;
+long long int explored_nodes = 0;
+long long int current_best_updates_from_pessimistic_bounds = 0;
+long long int current_best_updates_from_completed_nodes = 0;
 
 void print_usage() {
   cerr << "Usage:\nmaze: [--p2D] [-p] -f file" << endl;
@@ -129,7 +129,7 @@ int maze_greedy(const vector<vector<int>> & m, int pos_i, int pos_j){
   int a = maze_greedy(m, pos_i, pos_j, b);
   if (b) {
     return a;
-  }  
+  }
   return numeric_limits<int>::max();
 }
 
@@ -346,6 +346,7 @@ int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, i
   }
 
   // 1
+  // int sol = numeric_limits<int>::max();
   int sol = iterative_sol;
   // double sol = iterative_sol;
 
@@ -379,6 +380,7 @@ int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, i
   // queue<Node> pq;
 
   pq.emplace(0, 0, 1, optimistic_limit(0, 0)+1);
+  // pq.emplace(0, 0, 1);
 
 
   while (!pq.empty()) {
@@ -387,6 +389,7 @@ int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, i
     // auto [i, j, current, opt] = pq.front();
 
     auto [i, j, current, opt] = pq.top();
+    // auto [i, j, current] = pq.top();
 
     pq.pop();
 
@@ -405,18 +408,18 @@ int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, i
     }
 
     int a_i, a_j;
-    int n;
+    // int n;
 
     expanded_nodes++;
     for (int a = 1; a < 9; a++) {
       visited_nodes++;
 
-      n = prioritize(a);
+      // n = prioritize(a);
       a_i = i;
       a_j = j;
 
       int sol_aux = current;
-      directions(n, a_i, a_j); // get the direction of the n
+      directions(a, a_i, a_j); // get the direction of the n
 
       // no feasible
       if (a_i < 0 || a_j < 0 || 
@@ -454,7 +457,7 @@ int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, i
       }
 
       // int vor = maze_greedy(matrix, i, j);
-      // if ( vor!= numeric_limits<int>::max() && vor+current < sol) {
+      // if (vor!= numeric_limits<int>::max() && vor+current < sol) {
       //   sol = vor+current;
       // }
 
@@ -468,7 +471,7 @@ int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, i
       arrived[a_i][a_j] = sol_aux;
 
       int opt_lim = optimistic_limit(a_i, a_j) + sol_aux;
-      // double opt_lim = 1.0205*optimistic_limit(a_i, a_j) + sol_aux;
+      // // double opt_lim = 1.0205*optimistic_limit(a_i, a_j) + sol_aux;
 
       if (opt_lim >= sol) {
         no_promissing_discarded_nodes++;
@@ -476,6 +479,7 @@ int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, i
       }
 
       pq.emplace(a_i, a_j, sol_aux, opt_lim);
+      // pq.emplace(a_i, a_j, sol_aux);
     }
   }
 
@@ -522,8 +526,8 @@ int main(int argc, char ** argv){
   int rows, cols;
   is >> rows >> cols;
   vector<vector<int>> matrix(rows, vector<int>(cols));
-  vector<vector<int>> memo(rows, vector<int>(cols));
-  vector<vector<int>> memo2(rows, vector<int>(cols, CENTINELA));
+  vector<vector<int>> memo(rows, vector<int>(cols, numeric_limits<int>::max()));
+  // vector<vector<int>> memo2(rows, vector<int>(cols, CENTINELA));
 
   for (int i = 0; i < rows; i++)
     for (int j = 0; j < cols; j++)
