@@ -5,7 +5,15 @@
 execute() {
   # echo "------------------------------"
   echo "test "$1
-  ./maze_bb -f "tests/"$1"-bb.maze" | tail -n 1
+
+  touch /tmp/prueba
+  touch /tmp/prueba2
+
+  ./maze_bb -f "tests/"$1"-bb.maze" | head -n 1 >/tmp/prueba
+  cat "tests/"$1"-bb.maze.sol_bb" | head -n 1 >/tmp/prueba2
+
+  diff /tmp/prueba /tmp/prueba2
+
   # echo " +"
   # echo "----------------"
   # cat "tests/"$1"-bb.maze.sol_bb" | head -n 3

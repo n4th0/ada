@@ -334,6 +334,7 @@ int optimistic_limit(int pos_i, int pos_j){
 
   // int s = a_i*a_i + a_j*a_j;
   return max(a_i, a_j);
+  // return a_i + a_j;
 }
 
 int maze_bb(const vector<vector<int>> & matrix, vector<vector<int>> & arrived, int iterative_sol){
